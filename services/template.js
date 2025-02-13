@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('fs').promises;
-const Template = require('../models/template');
+const Template = require('../models/Template');
 
 exports.toTemplateJson = function(template) {
 

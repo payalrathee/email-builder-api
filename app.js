@@ -28,6 +28,7 @@ app.use(cookieParser());
 // Serve static files
 app.use(express.static(path.join(__dirname, '../client/build')));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static('uploads'));
 
 // Routes
 app.use('/api', indexRouter);
@@ -42,9 +43,6 @@ app.get('*', (req, res) => {
 
 // Connect database
 connectDB(); 
-
-// Serve static files
-app.use('/uploads', express.static('uploads'));
 
 // Set the view engine to EJS
 app.set('view engine', 'ejs');
