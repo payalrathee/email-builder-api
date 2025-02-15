@@ -10,11 +10,7 @@ exports.toTemplateJson = function(template) {
             id: template._id,
             name: template.name,
             description: template.description,
-            header: template.header,
-            imageUrl: template.imageUrl,
-            content: template.content,
-            link: template.link,
-            footer: template.footer,
+            sections: template.sections
         }
 
         return jsonTemplate
@@ -86,6 +82,122 @@ exports.deleteTemplate = async (templateId) => {
 
         return deletedTemplate;
         
+    } catch(error) {
+        throw error;
+    }
+}
+
+exports.renderTemplate = async (templateId) => {
+
+    try {
+
+        let template = await this.getTemplateById(templateId);
+
+        let templateContent = '';
+
+        // Add styles
+        templateContent += `
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+                background-color: #f9f9f9;
+            }
+            .email-container {
+                max-width: 600px;
+                margin: 20px auto;
+                background-color: #ffffff;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            }
+            .header {
+                background-color: #4CAF50;
+                color: #ffffff;
+                text-align: center;
+                padding: 15px;
+            }
+            .content {
+                padding: 20px;
+                color: #333333;
+                line-height: 1.6;
+            }
+            .content h1 {
+                font-size: 24px;
+                margin-bottom: 10px;
+            }
+            .content p {
+                margin: 10px 0;
+            }
+            .cta-button {
+                display: inline-block;
+                padding: 10px 20px;
+                color: #ffffff;
+                background-color: #4CAF50;
+                text-decoration: none;
+                border-radius: 5px;
+            }
+            .cta-button:hover {
+                background-color: #45a049;
+            }
+            .image-container {
+                text-align: center;
+                padding: 10px;
+            }
+            .link {
+                padding: 20px;
+            }
+            .footer {
+                background-color: #f1f1f1;
+                text-align: center;
+                font-size: 12px;
+                color: #555555;
+                padding: 10px;
+            }
+        </style>
+        `;
+
+        templateContent += '<div class="email-container">';
+
+        let sectionsContent = template.sections.map((section) => {
+            switch(section.category) {
+                case "header": 
+                    return `<div class="header">
+                                <h1>${section.content}</h1>
+                            </div>`
+                    
+                case "footer": 
+                    return `<div class="footer">
+                                <p>${section.content}</p>
+                            </div>`
+    
+                case "paragraph": 
+                    return `<div class="content">
+                                <p>${section.content}</p>
+                            </div>`
+    
+                case "link": 
+                    return `<div class="link">
+                                <a href="${section.content}" class="cta-button">Get Started</a>
+                            </div>`
+                    
+                case "image":
+                    return `<div class="image-container">
+                                <img src="${decodeURIComponent(section.content)}" alt="Header Image" style="max-width: 100%; height: auto"/>
+                            </div>`
+            }
+        })
+
+        sectionsContent.forEach(function(item) {
+            templateContent += item;
+        })
+
+        templateContent += '</div';
+
+        return templateContent;
+
     } catch(error) {
         throw error;
     }

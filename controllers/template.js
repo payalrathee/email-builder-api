@@ -73,23 +73,9 @@ exports.deleteTemplate = async (req,res) => {
 exports.renderTemplate = async (req,res) => {
     
     try {
-        const { id } = req.params;
 
-        const templateData = await templateService.getTemplateById(id);
-
-        if (!templateData) {
-            return res.status(404).json({ message: 'Template not found' });
-        }
-
-        // decode urls
-        templateData.imageUrl = decodeURIComponent(templateData.imageUrl);
-        templateData.link = decodeURIComponent(templateData.link);
-
-        // Set response headers to download the file
-        res.setHeader('Content-Disposition', `attachment; filename=template-${id}.html`);
-        res.setHeader('Content-Type', 'text/html');
-
-        return res.render('main', templateData);
+        const templateContent = await templateService.renderTemplate(req.params.id);
+        res.status(200).json(templateContent);
 
     } catch (error) {
         console.error(error);

@@ -1,41 +1,40 @@
 exports.sanitizeData = (req, res, next) => {
     const data = req.body;
-    const excludedKeys = ["link", "imageUrl"];
 
     const sanitizeObject = (obj) => {
-        
-        for (const key in obj) {
-           
-            if (typeof obj[key] === 'object') {
-                sanitizeObject(obj[key]);
-            } else if (typeof obj[key] === 'string') {
-                
-                obj[key] = obj[key].trim(); 
-                
-                if (key && !excludedKeys.includes(key)) {
-                    obj[key] = sanitize(obj[key]);
-                } else {
-                    obj[key] = encodeURIComponent(obj[key]);
+        if (Array.isArray(obj)) {
+            return obj.map(item => (typeof item === "object" ? sanitizeObject(item) : sanitizeString(item)));
+        } else if (typeof obj === "object" && obj !== null) {
+            for (const key in obj) {
+                if (typeof obj[key] === "object") {
+                    obj[key] = sanitizeObject(obj[key]);
+                } else if (typeof obj[key] === "string") {
+                    obj[key] = obj[key].trim();
+
+                    if ((obj.category === "image" || obj.category === "link") && key === "content") {
+                        // obj[key] = encodeURIComponent(obj[key]);
+                    } else {
+                        obj[key] = sanitizeString(obj[key]);
+                    }
                 }
-                
             }
         }
+        return obj;
     };
 
-    sanitizeObject(data);
+    function sanitizeString(string) {
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#x27;',
+            "/": '&#x2F;',
+        };
+        const reg = /[&<>"'/]/g;
+        return string.replace(reg, (match) => map[match]);
+    }
 
+    req.body = sanitizeObject(data);
     next();
 };
-
-function sanitize(string) {
-    const map = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#x27;',
-        "/": '&#x2F;',
-    };
-    const reg = /[&<>"'/]/ig;
-    return string.replace(reg, (match)=>(map[match]));
-}
